@@ -1,0 +1,19 @@
+---
+- name: Create user xitest
+  user:
+    name: xitest
+    password: "{{ 'pasx.123' | password_hash('sha512') }}"
+    shell: /bin/bash
+    groups: sudo
+
+- name: Add authorized keys for xitest
+  authorized_key:
+    user: xitest
+    key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOH/TlOb8TAXiMhN8u7VNqPC7W2hrhygm/1BZBZZp0q marek@GUADALAJARA-WSL"
+    state: present
+
+- name: Add additional authorized key for xitest
+  authorized_key:
+    user: xitest
+    key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP7FHrfu37DbzYBs6T3P/aq+XOeJAtu8Ftl1/3g1EN/K tkuba"
+    state: present

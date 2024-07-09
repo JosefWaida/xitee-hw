@@ -1,0 +1,16 @@
+---
+- name: Ensure backup directory exists
+  file:
+    path: /backups
+    state: directory
+
+- name: Schedule daily backups
+  cron:
+    name: "Backup WordPress"
+    minute: "0"
+    hour: "8,16,0"
+    job: "/backup.sh >> /var/log/backup.log 2>&1"
+    state: present
+
+- name: Retain backups from last two days
+  shell: find /backups -name 'backup_*' -mtime +2 -exec rm {} \;

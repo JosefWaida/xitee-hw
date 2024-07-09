@@ -1,0 +1,5 @@
+---
+- name: Ensure WordPress is running
+  shell: docker-compose up -d
+#  args:
+#    chdir: /etc/ansible
