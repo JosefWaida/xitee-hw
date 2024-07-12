@@ -9,25 +9,29 @@ services:
       - 8080:80
     environment:
       WORDPRESS_DB_HOST: db
-      WORDPRESS_DB_USER: exampleuser
-      WORDPRESS_DB_PASSWORD: examplepass
-      WORDPRESS_DB_NAME: exampledb
+      WORDPRESS_DB_USER: ${MYSQL_USER}
+      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD}
+      WORDPRESS_DB_NAME: ${MYSQL_DATABASE}
     volumes:
       - wordpress:/var/www/html
+    env_file:
+      - .env
 
   db:
     image: mysql:8.0
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: exampledb
-      MYSQL_USER: exampleuser
-      MYSQL_PASSWORD: examplepass
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_RANDOM_ROOT_PASSWORD: '1'
     volumes:
       - db:/var/lib/mysql
+    env_file:
+      - .env
 
   ansible:
-    image: willhallonline/ansible:2.16.4-ubuntu-22.04
+    image: ansible-vm-minimal:minimal #TODO Change for my own img
     # environment:
     #   - PWD=${PWD}
     volumes:
@@ -35,11 +39,24 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     entrypoint: /bin/bash -c "ansible-playbook $PWD/ansible/playbooks/site.yml -i ansible/inventory/hosts.ini"
 
-  backup:
-   image: alpine:latest
-   volumes:
-      - backup_data:/backups
-   entrypoint: /bin/sh -c "while true; do sleep 1d; /backup.sh; done"
+  wp_backup:
+    #image: backup-vm-minimal:latest # Change to this once uploaded img
+    build: .
+    container_name: wp_backup_container
+    volumes:
+      - ./backups:/backups
+    environment:
+      DB_CONTAINER_NAME: ${DB_CONTAINER_NAME}
+      WP_CONTAINER_NAME: ${WP_CONTAINER_NAME}
+      DB_USER: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      DB_NAME: ${MYSQL_DATABASE}
+      BACKUP_DIR: /backups
+    depends_on:
+      - wordpress
+      - db
+    env_file:
+      - .env
 
 volumes:
   wordpress:
