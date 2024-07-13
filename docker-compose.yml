@@ -31,17 +31,16 @@ services:
       - .env
 
   ansible:
-    image: ansible-vm-minimal:minimal #TODO Change for my own img
+    image: ansible-vm-minimal:latest
     # environment:
     #   - PWD=${PWD}
     volumes:
-      - ${PWD}/ansible:/tmp/ansible
-      - /var/run/docker.sock:/var/run/docker.sock
-    entrypoint: /bin/bash -c "ansible-playbook $PWD/ansible/playbooks/site.yml -i ansible/inventory/hosts.ini"
+      - ./ansible-vm/tasks/:/home/ansible/
+      - ./ansible-vm/hosts.ini:/home/ansible/hosts.ini
+    #entrypoint: /bin/bash -c "ansible-playbook playbooks/site.yml -i hosts.ini"
 
   wp_backup:
-    #image: backup-vm-minimal:latest # Change to this once uploaded img
-    build: .
+    image: backup-vm-minimal:latest # Change to this once uploaded img
     container_name: wp_backup_container
     volumes:
       - ./backups:/backups
@@ -61,4 +60,4 @@ services:
 volumes:
   wordpress:
   db:
-  backup_data:
+  backup_data: #TODO CHANGE NAME

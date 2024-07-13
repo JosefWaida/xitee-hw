@@ -25,7 +25,7 @@ RUN sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/s
 RUN useradd -m -d $ANSIBLE_USER_HOME -s /bin/bash $ANSIBLE_USER_NAME && \
     echo "$ANSIBLE_USER_NAME ALL=(ALL) NOPASSWD:/usr/bin/ansible" >> /etc/sudoers && \
     useradd -m -d $XITEE_USER_HOME -s /bin/bash $XITEE_USER_NAME && \
-    echo "$XITEE_USER_NAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
+    echo "$XITEE_USER_NAME ALL=(ALL) ALL" >> /etc/sudoers && \
     useradd -m -d $TEST_USER_HOME -s /bin/bash $TEST_USER_NAME && \
     echo "$TEST_USER_NAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
@@ -42,7 +42,7 @@ RUN touch $TEST_USER_HOME/.ssh/authorized_keys && \
     echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDJSrEw9z6XMtpZfzFivSEMCmvxpwUtLpIXOQxpvnb4qEVxK+PbTLHDo05eEa3cFh0VPCUgP0zOQcjjkq+kaU1ekPf0S2z4cHITDB12G1XRAMcnxMVqmWB8wtphiC29ShsHFLBa9Q5tiD6KXloZ0jxChxLKYz3vS44xnL6+h9yil2+L7GP31VohjsLiLF10jYGt/1qIMNrPJm54npG5dTibcFzu+V3+ySM78vGuCVHRNxiBu/ZGFeNwVEaprsDjp3LZ+d7FLTPJnHVgpd+7Mvljuz2j5+kv/fzX9+7fTXoufzrwtizv82LhTs8eZoAqteqj4CQhPYYg+ziSlvQEp0lH github-key-ao" >> $TEST_USER_HOME/.ssh/authorized_keys && \
     chmod 600 $TEST_USER_HOME/.ssh/authorized_keys && \
     chown -R $TEST_USER_NAME:$TEST_USER_NAME $TEST_USER_HOME/.ssh && \
-    echo "$TEST_USER_NAME:test123 | chpasswd
+    echo "$TEST_USER_NAME:test123" | chpasswd
 
 
 # Add SSH keys for xitee_user + set password
@@ -56,6 +56,14 @@ RUN touch $XITEE_USER_HOME/.ssh/authorized_keys && \
 
 # Install Ansible
 RUN pip3 install --no-cache-dir ansible
+COPY tasks $ANSIBLE_USER_HOME
+COPY hosts.ini $ANSIBLE_USER_HOME
+COPY ansible.cfg $ANSIBLE_USER_HOME
+
+# Add /opt/conda/bin to the PATH for ANSIBLE_USER_NAME
+RUN echo 'export PATH=$PATH:/opt/conda/bin' >> $ANSIBLE_USER_HOME/.bashrc && \
+    echo 'export PATH=$PATH:/opt/conda/bin' >> $ANSIBLE_USER_HOME/.profile && \
+    chown $ANSIBLE_USER_NAME:$ANSIBLE_USER_NAME $ANSIBLE_USER_HOME/.bashrc $ANSIBLE_USER_HOME/.profile
 
 # Expose SSH port
 EXPOSE 22
