@@ -31,7 +31,7 @@ services:
       - .env
 
   ansible:
-    image: ansible-vm-minimal:latest
+    image: ansible-vm:latest
     # environment:
     #   - PWD=${PWD}
     volumes:
@@ -40,7 +40,7 @@ services:
     #entrypoint: /bin/bash -c "ansible-playbook playbooks/site.yml -i hosts.ini"
 
   wp_backup:
-    image: backup-vm-minimal:latest # Change to this once uploaded img
+    image: backup-vm:latest # Change to this once uploaded img
     container_name: wp_backup_container
     volumes:
       - ./backups:/backups
